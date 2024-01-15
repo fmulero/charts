@@ -154,58 +154,12 @@ jobs:
     # Job to be run only when the triage for automated PRs did as well,
     # not taking into account whether 'VIB Verify' succeeded
     if: |
-      always() &&
-      contains(github.event.pull_request.labels.*.name, 'auto-merge') &&
-      github.event.pull_request.user.login == 'bitnami-bot'
+      always()
     steps:
       # Approve the CI's PR if the 'VIB Verify' job succeeded
       # Approved by the 'github-actions' user; a PR can't be approved by its author
-      - name: PR approval
-        if: ${{ needs.vib-verify.result == 'success' }}
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+      - uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935
         with:
-          result-encoding: string
-          retries: 3
-          script: |
-            github.rest.pulls.createReview({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number,
-              event: 'APPROVE',
-            });
-      - name: Merge
-        id: merge
-        if: ${{ needs.vib-verify.result == 'success' }}
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
-        with:
-          result-encoding: string
-          retries: 3
-          github-token: ${{ secrets.BITNAMI_BOT_TOKEN }}
-          script: |
-            github.rest.pulls.merge({
-              pull_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              merge_method: 'squash'
-            })
-      # If the CI did not succeed ('VIB Verify' failed or skipped),
-      # post a comment on the PR and assign a maintainer agent to review it
-      - name: Manual review required
-        if: ${{ always() && (needs.vib-verify.result != 'success' || steps.merge.outcome != 'success' ) }}
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
-        env:
-          BODY: |
-            There has been an error during the automated release process. Manual revision is now required.
-            Please check the related [action_run#${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more information.
-        with:
-          retries: 3
-          # Necessary to trigger support workflows
-          github-token: ${{ secrets.BITNAMI_BOT_TOKEN }}
-          script: |
-            const {BODY} = process.env
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `${BODY}`
-            })
+          path: ~/artifacts
+      - run: |
+          ls -la
