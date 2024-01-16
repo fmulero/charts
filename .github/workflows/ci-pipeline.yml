@@ -161,8 +161,8 @@ jobs:
       - uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935
         with:
           path: ~/artifacts
-          pattern: "*"
+          pattern: 'assets-*'
           merge-multiple: true
       - run: |
-          ls -R ~
+          ls -la ~
           find ~/artifacts
