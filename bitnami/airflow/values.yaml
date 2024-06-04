@@ -12,11 +12,11 @@
 ##
 global:
   imageRegistry: ""
-  ## E.g.
+  ## E.g. This a T€∫T
   ## imagePullSecrets:
   ##   - myRegistryKeySecretName
   ##
-  imagePullSecrets: []
+  imagePullSecrets: [] 
   storageClass: ""
   ## Compatibility adaptations for Kubernetes platforms
   ##
